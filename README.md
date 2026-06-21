@@ -1,7 +1,7 @@
 # Doom-C
 
-A Doom-style raycasting game written in C, translated from a Python/Pygame prototype.  
-Uses **SDL2**, **SDL2_image** and **SDL2_mixer** for rendering and audio.
+A Doom-style raycasting game written in C.  
+Uses **SDL2**, **SDL2_image** and **SDL2_mixer**.
 
 ---
 
