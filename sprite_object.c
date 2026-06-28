@@ -4,12 +4,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h> /* FindFirstFile / FindNextFile for directory listing */
+#include <dirent.h>
 
 /* ---- Directory image loading ---------------------------------------- */
 
 static int cmp_filenames(const void *a, const void *b) {
-    /* Numeric sort for "0.png", "1.png" etc.; alphabetic fallback */
     int na = atoi((const char *)a);
     int nb = atoi((const char *)b);
     if (na == 0 && nb == 0)
@@ -21,29 +20,26 @@ int load_images_from_dir(const char *dir_path,
                           SDL_Texture **images, int max_images,
                           SDL_Renderer *renderer)
 {
-    char search[512];
-    snprintf(search, sizeof(search), "%s/*.png", dir_path);
+    DIR *d = opendir(dir_path);
+    if (!d) return 0;
 
-    WIN32_FIND_DATAA fd;
-    HANDLE h = FindFirstFileA(search, &fd);
-    if (h == INVALID_HANDLE_VALUE) return 0;
-
-    /* Collect filenames */
     char names[MAX_ANIMATION_FRAMES][256];
     int count = 0;
-    do {
-        if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && count < max_images) {
-            strncpy(names[count], fd.cFileName, 255);
-            names[count][255] = '\0';
-            count++;
-        }
-    } while (FindNextFileA(h, &fd) && count < max_images);
-    FindClose(h);
+    struct dirent *ent;
+    while ((ent = readdir(d)) != NULL && count < max_images) {
+        const char *name = ent->d_name;
+        size_t len = strlen(name);
+        if (len < 4 || strcmp(name + len - 4, ".png") != 0)
+            continue;
+        strncpy(names[count], name, 255);
+        names[count][255] = '\0';
+        count++;
+    }
+    closedir(d);
 
     /* Sort numerically */
     qsort(names, count, sizeof(names[0]), cmp_filenames);
 
-    /* Load each */
     for (int i = 0; i < count; i++) {
         char full[512];
         snprintf(full, sizeof(full), "%s/%s", dir_path, names[i]);
@@ -200,6 +196,5 @@ void animated_sprite_update(AnimatedSprite *as, Game *game) {
 void animated_sprite_cleanup(AnimatedSprite *as) {
     for (int i = 0; i < as->image_count; i++)
         if (as->images[i]) { SDL_DestroyTexture(as->images[i]); as->images[i] = NULL; }
-    /* base.image points into images[], already freed */
     as->base.image = NULL;
 }

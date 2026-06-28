@@ -1,12 +1,9 @@
-#define SDL_MAIN_HANDLED  /* empêche SDL2 de renommer main() en SDL_main() */
+#define SDL_MAIN_HANDLED
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* ---- Global trigger timer ------------------------------------------ */
-
-/* Timer callback fires every 40 ms and pushes a SDL_USEREVENT */
 #define GLOBAL_EVENT_CODE 1
 
 static Uint32 global_timer_callback(Uint32 interval, void *param) {
@@ -23,6 +20,7 @@ static Uint32 global_timer_callback(Uint32 interval, void *param) {
 
 int game_init(Game *game) {
     memset(game, 0, sizeof(*game));
+    SDL_SetMainReady();
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
@@ -55,7 +53,6 @@ int game_init(Game *game) {
     SDL_SetWindowGrab(game->window, SDL_TRUE);
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
-    /* Periodic global trigger event every 40 ms */
     SDL_AddTimer(40, global_timer_callback, NULL);
 
     game->running    = 1;
@@ -66,7 +63,6 @@ int game_init(Game *game) {
 }
 
 void game_new_game(Game *game) {
-    /* Clean up previous game state if any */
     object_handler_cleanup(&game->object_handler);
     object_renderer_cleanup(&game->object_renderer);
     weapon_cleanup(&game->weapon);

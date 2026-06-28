@@ -8,8 +8,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define WIDTH        1600
-#define HEIGHT       900
+#define WIDTH        1920
+#define HEIGHT       1080
 #define HALF_WIDTH   (WIDTH / 2)
 #define HALF_HEIGHT  (HEIGHT / 2)
 #define FPS          0
